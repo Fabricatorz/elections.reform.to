@@ -1,0 +1,9 @@
+development:
+  adapter: mysql
+  encoding: utf8
+  reconnect: false
+  database: DATABASE
+  pool: 5
+  username: USERNAME
+  password: PASSWORD
+  socket: /var/run/mysqld/mysqld.sock
