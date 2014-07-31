@@ -1,0 +1,8 @@
+db/config.yml
+db/*sqlite3
+
+# OS X
+.DS_Store
+
+# Vim
+.*.sw[a-z]
