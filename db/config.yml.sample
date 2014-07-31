@@ -7,3 +7,7 @@ development:
   username: USERNAME
   password: PASSWORD
   socket: /var/run/mysqld/mysqld.sock
+test:
+  adapter: sqlite3
+  encoding: utf8
+  database: db/test.sqlite3
