@@ -1,8 +1,8 @@
 require 'webmachine'
 require 'webmachine/adapters/rack'
-require 'active_record'
 require 'json'
 
+require_relative 'lib/records'
 require_relative 'lib/serializers'
 
 class JsonResource < Webmachine::Resource
@@ -43,7 +43,7 @@ class CandidateResource < JsonResource
   end
 
   def resource_exists?
-    @item = ActiveRecord::Base.connection.select_one("SELECT * FROM candidates WHERE can_id = #{ActiveRecord::Base.sanitize(id)} AND election_yr = #{ActiveRecord::Base.sanitize(cycle)}")
+    @item = CandidatesRecords.by_id(cycle, id)
 
     if @item.nil?
       @response.headers['Content-Type'] = 'application/json'
@@ -77,7 +77,7 @@ class SeatsResource < JsonResource
   end
 
   def resource_exists?
-    @collection = ActiveRecord::Base.connection.select_all("SELECT * FROM candidates WHERE can_off_sta = #{ActiveRecord::Base.sanitize(state_token)} AND election_yr = #{ActiveRecord::Base.sanitize(cycle)} AND election_yr = #{ActiveRecord::Base.sanitize(cycle)} ORDER BY can_off_sta ASC, can_off_dis ASC, can_nam ASC")
+    @collection = CandidatesRecords.by_state(cycle, state_token)
 
     unless @collection.any?
       @response.headers['Content-Type'] = 'application/json'
@@ -122,7 +122,7 @@ class OfficeSeatsResource < JsonResource
       can_off = 'S'
     end
 
-    @collection = ActiveRecord::Base.connection.select_all("SELECT * FROM candidates WHERE can_off_sta = #{ActiveRecord::Base.sanitize(state_token)} AND can_off = #{ActiveRecord::Base.sanitize(can_off)} AND election_yr = #{ActiveRecord::Base.sanitize(cycle)} ORDER BY can_off_sta ASC, can_off_dis ASC, can_nam ASC")
+    @collection = CandidatesRecords.by_office(cycle, state_token, can_off)
 
     unless @collection.any?
       @response.headers['Content-Type'] = 'application/json'
@@ -164,7 +164,7 @@ class DistrictSeatsResource < JsonResource
   end
 
   def resource_exists?
-    @collection = ActiveRecord::Base.connection.select_all("SELECT * FROM candidates WHERE can_off_sta = #{ActiveRecord::Base.sanitize(state_token)} AND can_off = 'H' AND can_off_dis = #{ActiveRecord::Base.sanitize(district_token)} AND election_yr = #{ActiveRecord::Base.sanitize(cycle)} AND election_yr = #{ActiveRecord::Base.sanitize(cycle)} ORDER BY can_off_sta ASC, can_off_dis ASC, can_nam ASC")
+    @collection = CandidatesRecords.by_district(cycle, state_token, district_token)
 
     unless @collection.any?
       @response.headers['Content-Type'] = 'application/json'
