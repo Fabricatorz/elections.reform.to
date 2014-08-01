@@ -3,6 +3,8 @@ require 'webmachine/adapters/rack'
 require 'active_record'
 require 'json'
 
+require_relative 'lib/serializers'
+
 class JsonResource < Webmachine::Resource
   def content_types_provided
     [["application/json", :to_json]]
@@ -52,35 +54,7 @@ class CandidateResource < JsonResource
   end
 
   def to_json
-    can_id = @item['can_id']
-    state = @item['can_off_sta']
-    district = @item['can_off_dis']
-    case @item['can_off']
-    when 'H'
-      office = 'house'
-      district_link = "/seats/#{state}/#{office}/#{district}.json"
-    when 'S'
-      office = 'senate'
-      district_link = "/seats/#{state}/#{office}.json"
-    end
-
-    {
-      :status => "OK",
-      :copyright => "Copyright (c) 2014 Fabricatorz, LLC. All Rights Reserved.",
-      :base_uri => base_uri,
-      :cycle => cycle,
-      :results => [
-        {
-          :id => @item['can_id'],
-          :name => @item['can_nam'],
-          :party => @item['can_par_aff'],
-          :district => district_link,
-          :fec_uri => "http://docquery.fec.gov/cgi-bin/fecimg/?#{can_id}",
-          :committee => nil,
-          :state => "/seats/#{state}.json"
-        }
-      ]
-    }.to_json
+    CandidateSerializer.new(base_uri, cycle, @item).to_json
   end
 end
 
@@ -114,38 +88,7 @@ class SeatsResource < JsonResource
   end
 
   def to_json
-    results = @collection.map do |item|
-      can_id = item['can_id']
-      state = item['can_off_sta']
-      district = item['can_off_dis']
-      case item['can_off']
-      when 'H'
-        office = 'house'
-        district_link = "/seats/#{state}/#{office}/#{district}.json"
-      when 'S'
-        office = 'senate'
-        district_link = "/seats/#{state}/#{office}.json"
-      end
-      can_id
-      {
-        :candidate => {
-          :id => item['can_id'],
-          :relative_uri => "/candidates/#{can_id}.json",
-          :name => item['can_nam'],
-          :party => item['can_par_aff']
-        },
-        :district => district_link,
-        :state => "/seats/#{state}.json"
-      }
-    end
-    {
-      :status => "OK",
-      :copyright => "Copyright (c) 2014 Fabricatorz, LLC. All Rights Reserved.",
-      :base_uri => base_uri,
-      :cycle => cycle,
-      :num_results => results.length,
-      :results => results
-    }.to_json
+    CandidatesSerializer.new(base_uri, cycle, state_token, nil, @collection).to_json
   end
 end
 
@@ -190,40 +133,7 @@ class OfficeSeatsResource < JsonResource
   end
 
   def to_json
-    results = @collection.map do |item|
-      can_id = item['can_id']
-      state = item['can_off_sta']
-      district = item['can_off_dis']
-      case item['can_off']
-      when 'H'
-        office = 'house'
-        district_link = "/seats/#{state}/#{office}/#{district}.json"
-      when 'S'
-        office = 'senate'
-        district_link = "/seats/#{state}/#{office}.json"
-      end
-      can_id
-      {
-        :candidate => {
-          :id => item['can_id'],
-          :relative_uri => "/candidates/#{can_id}.json",
-          :name => item['can_nam'],
-          :party => item['can_par_aff']
-        },
-        :district => district_link,
-        :state => "/seats/#{state}.json"
-      }
-    end
-    {
-      :status => "OK",
-      :copyright => "Copyright (c) 2014 Fabricatorz, LLC. All Rights Reserved.",
-      :base_uri => base_uri,
-      :cycle => cycle,
-      :state => state_token,
-      :district => nil,
-      :num_results => results.length,
-      :results => results
-    }.to_json
+    CandidatesSerializer.new(base_uri, cycle, state_token, nil, @collection).to_json
   end
 end
 
@@ -265,34 +175,7 @@ class DistrictSeatsResource < JsonResource
   end
 
   def to_json
-    results = @collection.map do |item|
-      can_id = item['can_id']
-      state = item['can_off_sta']
-      district = item['can_off_dis']
-      office = 'house'
-      district_link = "/seats/#{state}/#{office}/#{district}.json"
-      can_id
-      {
-        :candidate => {
-          :id => item['can_id'],
-          :relative_uri => "/candidates/#{can_id}.json",
-          :name => item['can_nam'],
-          :party => item['can_par_aff']
-        },
-        :district => district_link,
-        :state => "/seats/#{state}.json"
-      }
-    end
-    {
-      :status => "OK",
-      :copyright => "Copyright (c) 2014 Fabricatorz, LLC. All Rights Reserved.",
-      :base_uri => base_uri,
-      :cycle => cycle,
-      :state => state_token,
-      :district => district_token,
-      :num_results => results.length,
-      :results => results
-    }.to_json
+    CandidatesSerializer.new(base_uri, cycle, state_token, district_token, @collection).to_json
   end
 end
 
