@@ -35,8 +35,8 @@ end
 class StatesResource < ElectionsResource
 
   def state
-    # Remove any .json extension from the token
-    request.path_info[:state].sub(/\.json$/,'')
+    s = request.path_info[:state].sub(/\.json$/,'')
+    s.gsub(/\W+/, '')
   end
 
   def finish_request
@@ -54,7 +54,15 @@ end
 class OfficesResource < StatesResource
 
   def office
-    request.path_info[:office].sub(/\.json$/,'')
+    o = request.path_info[:office].sub(/\.json$/,'')
+    case o
+    when 'house'
+      o
+    when 'senate'
+      o
+    else
+      nil
+    end
   end
 
 end
@@ -62,7 +70,8 @@ end
 class DistrictsResource < OfficesResource
 
   def district
-    request.path_info[:district].sub(/\.json$/,'')
+    d = request.path_info[:district].sub(/\.json$/,'')
+    d.gsub(/[^0-9]/, '')
   end
 
 end
@@ -73,7 +82,8 @@ class CandidateResource < ElectionsResource
   end
 
   def id
-    request.path_info[:id].sub(/\.json$/,'')
+    i = request.path_info[:id].sub(/\.json$/,'')
+    i.gsub(/[^A-Z0-9]+/, '')
   end
 
   def base_uri
