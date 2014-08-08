@@ -1,10 +1,9 @@
 require 'spec_helper'
 require 'rspec_api_documentation/dsl'
 
-resource "Candidates" do
+resource "Finances" do
 
   before (:each) do
-    ActiveRecord::Base.connection.delete("DELETE FROM candidates");
 
     # NH-1
     ActiveRecord::Base.connection.insert("INSERT INTO candidates (election_yr, can_id, can_nam, can_off, can_off_sta, can_off_dis, can_par_aff, can_inc_cha_ope_sea) VALUES (2014, 'H6NH01230', 'SHEA-PORTER, CAROL', 'H', 'NH', '01', 'DEM', 'INCUMBENT')")
@@ -20,7 +19,8 @@ resource "Candidates" do
     ActiveRecord::Base.connection.insert("INSERT INTO candidates (election_yr, can_id, can_nam, can_off, can_off_sta, can_off_dis, can_par_aff, can_inc_cha_ope_sea) VALUES (2014, 'S4NH00120', 'BROWN, SCOTT', 'S','NH', '00','REP','CHALLENGER')");
   end
 
-  after (:all) do
+  after (:each) do
+    ActiveRecord::Base.connection.delete("DELETE FROM candidates");
   end
 
   header "Accept", "application/json"
@@ -94,12 +94,6 @@ resource "Candidates" do
       expect(status).to eq(404)
     end
   end
-end
-
-resource "Seats" do
-
-  header "Accept", "application/json"
-  header "Content-Type", "application/json"
 
   get "/finances/:cycle/seats/:state" do
     let(:cycle) { "2014" }
@@ -137,12 +131,6 @@ resource "Seats" do
       expect(status).to eq(404)
     end
   end
-end
-
-resource "OfficeSeats" do
-
-  header "Accept", "application/json"
-  header "Content-Type", "application/json"
 
   get "/finances/:cycle/seats/:state/:office" do
     let(:cycle) { "2014" }
@@ -179,12 +167,6 @@ resource "OfficeSeats" do
       expect(response_body).to be_json_eql(JSON.parse('{"status":"OK","copyright":"Copyright (c) 2014 Fabricatorz, LLC. All Rights Reserved.","base_uri":"http://example.org/finances/2014/","cycle":2014,"state":"NH","district":null,"num_results":3,"results":[{"candidate":{"id":"S4NH00120","relative_uri":"/candidates/S4NH00120.json","name":"BROWN, SCOTT","party":"REP"},"district":"/seats/NH/senate.json","state":"/seats/NH.json"},{"candidate":{"id":"S4NH00112","relative_uri":"/candidates/S4NH00112.json","name":"RUBENS, JIM","party":"REP"},"district":"/seats/NH/senate.json","state":"/seats/NH.json"},{"candidate":{"id":"S0NH00219","relative_uri":"/candidates/S0NH00219.json","name":"SHAHEEN, JEANNE","party":"DEM"},"district":"/seats/NH/senate.json","state":"/seats/NH.json"}]}').to_json)
     end
   end
-end
-
-resource "DistrictSeats" do
-
-  header "Accept", "application/json"
-  header "Content-Type", "application/json"
 
   get "/finances/:cycle/seats/:state/house/:district" do
     let(:cycle) { "2014" }
