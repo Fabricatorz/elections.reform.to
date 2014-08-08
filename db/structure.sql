@@ -59,9 +59,22 @@ CREATE TABLE `candidates` (
   KEY `index_candidates_on_can_off_sta` (`can_off_sta`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2511 DEFAULT CHARSET=utf8;
 
+CREATE TABLE `races` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `election_yr` smallint(6) DEFAULT NULL,
+  `can_id` varchar(9) DEFAULT NULL,
+  `on_ballot` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `index_races_on_election_yr_and_can_id` (`election_yr`,`can_id`),
+  KEY `index_races_on_election_yr` (`election_yr`),
+  KEY `index_races_on_can_id` (`can_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+
 CREATE TABLE `schema_migrations` (
   `version` varchar(255) NOT NULL,
   UNIQUE KEY `unique_schema_migrations` (`version`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO schema_migrations (version) VALUES ('20140716130759');
+
+INSERT INTO schema_migrations (version) VALUES ('20140807101832');

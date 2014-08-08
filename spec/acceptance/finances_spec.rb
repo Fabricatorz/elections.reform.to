@@ -120,7 +120,7 @@ resource "Finances" do
 
   get "/finances/:cycle/seats/:state" do
     let(:cycle) { "2014" }
-    let(:id) { "XX" }
+    let(:state) { "XX" }
 
     example "Getting a state that doesn't exist" do
       do_request

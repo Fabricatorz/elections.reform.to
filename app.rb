@@ -21,6 +21,17 @@ class JsonResource < Webmachine::Resource
 end
 
 class ElectionsResource < JsonResource
+  def allowed_methods
+    ["GET"]
+  end
+
+  def base_resource
+    request.disp_path[0, request.disp_path.index('/')]
+  end
+
+  def base_uri
+    @request.base_uri.to_s + "#{base_resource}/#{cycle}/"
+  end
 
   def cycle
     request.path_info[:cycle].to_i
@@ -55,14 +66,7 @@ class OfficesResource < StatesResource
 
   def office
     o = request.path_info[:office].sub(/\.json$/,'')
-    case o
-    when 'house'
-      o
-    when 'senate'
-      o
-    else
-      nil
-    end
+    o.slice(/^(house|senate)$/)
   end
 
 end
@@ -77,21 +81,13 @@ class DistrictsResource < OfficesResource
 end
 
 class CandidateResource < ElectionsResource
-  def allowed_methods
-    ["GET"]
-  end
-
   def id
     i = request.path_info[:id].sub(/\.json$/,'')
     i.gsub(/[^A-Z0-9]+/, '')
   end
 
-  def base_uri
-    @request.base_uri.to_s + "finances/#{cycle}/"
-  end
-
   def resource_exists?
-    @resource = CandidatesRecords.by_id(cycle, id)
+    @resource = FinancesRecords.by_id(cycle, id)
 
     !@resource.nil?
   end
@@ -110,16 +106,13 @@ class CandidateResource < ElectionsResource
 end
 
 class StateResource < StatesResource
-  def allowed_methods
-    ["GET"]
-  end
-
-  def base_uri
-    @request.base_uri.to_s + "finances/#{cycle}/"
-  end
-
   def resource_exists?
-    @resources = CandidatesRecords.by_state(cycle, state)
+    case base_resource
+    when 'finances'
+      @resources = FinancesRecords.by_state(cycle, state)
+    when 'races'
+      @resources = RacesRecords.by_state(cycle, state)
+    end
 
     @resources.any?
   end
@@ -130,23 +123,13 @@ class StateResource < StatesResource
 end
 
 class OfficeResource < OfficesResource
-  def allowed_methods
-    ["GET"]
-  end
-
-  def base_uri
-    @request.base_uri.to_s + "finances/#{cycle}/"
-  end
-
   def resource_exists?
-    case office
-    when 'house'
-      can_off = 'H'
-    when 'senate'
-      can_off = 'S'
+    case base_resource
+    when 'finances'
+      @resources = FinancesRecords.by_office(cycle, state, can_off)
+    when 'races'
+      @resources = RacesRecords.by_office(cycle, state, can_off)
     end
-
-    @resources = CandidatesRecords.by_office(cycle, state, can_off)
 
     @resources.any?
   end
@@ -154,19 +137,27 @@ class OfficeResource < OfficesResource
   def to_json
     CandidatesSerializer.new(base_uri, cycle, state, nil, @resources).to_json
   end
+
+  protected
+  def can_off
+    case office
+    when 'house'
+      'H'
+    when 'senate'
+      'S'
+    end
+  end
+
 end
 
 class DistrictResource < DistrictsResource
-  def allowed_methods
-    ["GET"]
-  end
-
-  def base_uri
-    @request.base_uri.to_s + "finances/#{cycle}/"
-  end
-
   def resource_exists?
-    @resources = CandidatesRecords.by_district(cycle, state, district)
+    case base_resource
+    when 'finances'
+      @resources = FinancesRecords.by_district(cycle, state, district)
+    when 'races'
+      @resources = RacesRecords.by_district(cycle, state, district)
+    end
 
     @resources.any?
   end
@@ -185,6 +176,12 @@ App = Webmachine::Application.new do |app|
     add ["finances", :cycle, "seats", :state], StateResource
     add ["finances", :cycle, "seats", :state, :office], OfficeResource
     add ["finances", :cycle, "seats", :state, "house", :district], DistrictResource
+
+    add ["races", :cycle, "candidates", :id], CandidateResource
+    add ["races", :cycle, "seats", :state], StateResource
+    add ["races", :cycle, "seats", :state, :office], OfficeResource
+    add ["races", :cycle, "seats", :state, "house", :district], DistrictResource
+
     #add ['trace', '*'], Webmachine::Trace::TraceResource
   end
 end

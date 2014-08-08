@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140716130759) do
+ActiveRecord::Schema.define(:version => 20140807101832) do
 
   create_table "candidates", :force => true do |t|
     t.integer "election_yr",           :limit => 2
@@ -72,5 +72,15 @@ ActiveRecord::Schema.define(:version => 20140716130759) do
   add_index "candidates", ["can_off_sta"], :name => "index_candidates_on_can_off_sta"
   add_index "candidates", ["election_yr", "can_id"], :name => "index_candidates_on_election_yr_and_can_id", :unique => true
   add_index "candidates", ["election_yr"], :name => "index_candidates_on_election_yr"
+
+  create_table "races", :force => true do |t|
+    t.integer "election_yr", :limit => 2
+    t.string  "can_id",      :limit => 9
+    t.boolean "on_ballot"
+  end
+
+  add_index "races", ["can_id"], :name => "index_races_on_can_id"
+  add_index "races", ["election_yr", "can_id"], :name => "index_races_on_election_yr_and_can_id", :unique => true
+  add_index "races", ["election_yr"], :name => "index_races_on_election_yr"
 
 end
