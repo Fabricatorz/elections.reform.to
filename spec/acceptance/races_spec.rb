@@ -34,6 +34,18 @@ resource "Races" do
   header "Accept", "application/json"
   header "Content-Type", "application/json"
 
+  # Can't test search since a SQLite test database doesn't support REGEXP
+  get "/races/:cycle/candidates/search?query=Carol%20Shea-Porter" do
+    let(:cycle) { "2014" }
+
+    example "Searching for a candidate" do
+      #do_request
+
+      #expect(response_body).to be_json_eql(JSON.parse('{"status":"OK","copyright":"Copyright (c) 2014 Fabricatorz, LLC. All Rights Reserved.","base_uri":"http://example.org/finances/2014/","cycle":2014,"state":null,"district":null,"num_results":1,"results":[{"candidate":{"id":"H6NH01230","relative_uri":"/candidates/H6NH01230.json","name":"SHEA-PORTER, CAROL","party":"DEM"},"district":"/seats/NH/house/01.json","state":"/seats/NH.json"}]}').to_json)
+    end
+
+  end
+
   get "/races/:cycle/candidates/:id" do
     let(:cycle) { "2014" }
     let(:id) { "H6NH01230" }

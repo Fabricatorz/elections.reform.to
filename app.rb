@@ -80,6 +80,38 @@ class DistrictsResource < OfficesResource
 
 end
 
+class SearchResource < ElectionsResource
+
+  def query
+    if request.query['query']
+      request.query['query']
+    end
+  end
+
+  def resource_exists?
+    if query
+      @resources = FinancesRecords.search(cycle, query)
+    else
+      @resources = []
+    end
+  end
+
+  def to_json
+    CandidatesSerializer.new(base_uri, cycle, nil, nil, @resources).to_json
+  end
+
+  def finish_request
+    if defined? @resources
+      unless @resources.any?
+        response.headers['Content-Type'] = 'application/json'
+        response.body = error_body
+      end
+    end
+    nil
+  end
+
+end
+
 class CandidateResource < ElectionsResource
   def id
     i = request.path_info[:id].sub(/\.json$/,'')
@@ -172,11 +204,15 @@ App = Webmachine::Application.new do |app|
     config.adapter = :Rack
   end
   app.routes do
+    add ["finances", :cycle, "candidates", "search"], SearchResource
+    add ["finances", :cycle, "candidates", "search.json"], SearchResource
     add ["finances", :cycle, "candidates", :id], CandidateResource
     add ["finances", :cycle, "seats", :state], StateResource
     add ["finances", :cycle, "seats", :state, :office], OfficeResource
     add ["finances", :cycle, "seats", :state, "house", :district], DistrictResource
 
+    add ["races", :cycle, "candidates", "search"], SearchResource
+    add ["races", :cycle, "candidates", "search.json"], SearchResource
     add ["races", :cycle, "candidates", :id], CandidateResource
     add ["races", :cycle, "seats", :state], StateResource
     add ["races", :cycle, "seats", :state, :office], OfficeResource

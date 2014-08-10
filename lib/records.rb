@@ -2,6 +2,19 @@ require 'active_record'
 
 class FinancesRecords
 
+  def self.search(cycle, query)
+    s_cycle = ActiveRecord::Base.sanitize(cycle)
+
+    terms = query.split(" ")
+
+    selection = terms.map { |term|
+      t = ActiveRecord::Base.sanitize("(#{term}),")
+      "can_nam REGEXP #{t}"
+    }.join(" OR ")
+    relation = "SELECT #{projection} FROM #{relations} WHERE #{selection}"
+    ActiveRecord::Base.connection.select_all(relation)
+  end
+
   def self.by_id(cycle, id)
     s_cycle = ActiveRecord::Base.sanitize(cycle)
     s_id = ActiveRecord::Base.sanitize(id)

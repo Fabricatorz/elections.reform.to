@@ -26,6 +26,15 @@ resource "Finances" do
   header "Accept", "application/json"
   header "Content-Type", "application/json"
 
+  # Can't test search since a SQLite test database doesn't support REGEXP
+  get "/finances/:cycle/candidates/search?query=Carol%20Shea-Porter" do
+    let(:cycle) { "2014" }
+
+    example "Searching for a candidate" do
+    end
+
+  end
+
   get "/finances/:cycle/candidates/:id" do
     let(:cycle) { "2014" }
     let(:id) { "H6NH01230" }
