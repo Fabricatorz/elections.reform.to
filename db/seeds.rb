@@ -1,5 +1,33 @@
 require 'open-uri'
 require 'nokogiri'
+require 'yaml'
+
+def import_races(uri, db, year)
+  doc = YAML.load(open(uri))
+
+  election_yr = year
+  delete_races = db.prepare("DELETE FROM races where election_yr = ?")
+  delete_races.execute(election_yr)
+
+  insert_races = db.prepare "INSERT INTO races (election_yr, can_id, on_ballot) VALUES (?, ?, ?)"
+
+  doc.each do |can|
+    can_id = can['id']['fec'][0]
+
+    case can['races'][0]['on_ballot']
+    when 'Y', 'y', 'true', true
+      on_ballot = 1
+    when 'N', 'n', 'false', false
+      on_ballot = 0
+    else
+      on_ballot = nil
+    end
+
+    unless on_ballot.nil?
+      insert_races.execute election_yr, can_id, on_ballot
+    end
+  end
+end
 
 def import_candidate_summary(uri, db, year)
   begin
@@ -82,9 +110,19 @@ unless ENV["election_yr"].nil?
   db = ActiveRecord::Base.connection.raw_connection
 
   year = ENV["election_yr"]
-  uri = "http://www.fec.gov/data/CandidateSummary.do?format=xml&election_yr=#{year}"
+  candidate_uri = "http://www.fec.gov/data/CandidateSummary.do?format=xml&election_yr=#{year}"
 
-  import_candidate_summary(uri, db, year)
+  task = ENV["task"] ? ENV["task"] : "all"
+
+  if (task === "candidates" or task === "all")
+    import_candidate_summary(candidate_uri, db, year)
+  end
+
+  races_uri = "https://raw.githubusercontent.com/Reform-to/congress-candidates/master/candidates-current.yaml"
+
+  if (task === "races" or task === "all")
+    import_races(races_uri, db, year)
+  end
 
   db.close
 else
