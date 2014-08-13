@@ -31,6 +31,9 @@ resource "Finances" do
     let(:cycle) { "2014" }
 
     example "Searching for a candidate" do
+      #do_request
+
+      #expect(response_body).to be_json_eql(JSON.parse('{"status":"OK","copyright":"Copyright (c) 2014 Fabricatorz, LLC. All Rights Reserved.","base_uri":"http://example.org/finances/2014/","cycle":2014,"state":null,"district":null,"num_results":1,"results":[{"candidate":{"id":"H6NH01230","relative_uri":"/candidates/H6NH01230.json","name":"SHEA-PORTER, CAROL","party":"DEM"},"district":"/seats/NH/house/01.json","state":"/seats/NH.json"}]}').to_json)
     end
 
   end
@@ -186,6 +189,18 @@ resource "Finances" do
       do_request
 
       expect(response_body).to be_json_eql(JSON.parse('{"status":"OK","copyright":"Copyright (c) 2014 Fabricatorz, LLC. All Rights Reserved.","base_uri":"http://example.org/finances/2014/","cycle":2014,"state":"NH","district":"01","num_results":2,"results":[{"candidate":{"id":"H0NH01217","relative_uri":"/candidates/H0NH01217.json","name":"GUINTA, FRANK","party":"REP"},"district":"/seats/NH/house/01.json","state":"/seats/NH.json"},{"candidate":{"id":"H6NH01230","relative_uri":"/candidates/H6NH01230.json","name":"SHEA-PORTER, CAROL","party":"DEM"},"district":"/seats/NH/house/01.json","state":"/seats/NH.json"}]}').to_json)
+    end
+  end
+
+  get "/finances/:cycle/seats/:state/house/:district" do
+    let(:cycle) { "2014" }
+    let(:state) { "NH" }
+    let(:district) { "1.json" }
+
+    example "Getting a district without a leading zero" do
+      do_request
+
+      expect(status).to eq(200)
     end
   end
 

@@ -203,6 +203,18 @@ resource "Races" do
   get "/races/:cycle/seats/:state/house/:district" do
     let(:cycle) { "2014" }
     let(:state) { "NH" }
+    let(:district) { "1.json" }
+
+    example "Getting a district without a leading zero" do
+      do_request
+
+      expect(status).to eq(200)
+    end
+  end
+
+  get "/races/:cycle/seats/:state/house/:district" do
+    let(:cycle) { "2014" }
+    let(:state) { "NH" }
     let(:district) { "01.json" }
 
     example "Getting a district with .json extension" do

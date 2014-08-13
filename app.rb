@@ -75,7 +75,7 @@ class DistrictsResource < OfficesResource
 
   def district
     d = request.path_info[:district].sub(/\.json$/,'')
-    d.gsub(/[^0-9]/, '')
+    "%02d" % d.gsub(/[^0-9]/, '').to_i
   end
 
 end
